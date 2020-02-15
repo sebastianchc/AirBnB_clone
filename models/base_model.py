@@ -7,7 +7,7 @@ import models
 
 class BaseModel:
     """defines all common attributes/methods for other classes"""
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         """Init base model
             kwargs: Arguments
             id: unique id
@@ -17,14 +17,15 @@ class BaseModel:
 
         if kwargs:
             for key, value in kwargs.items():
-                if key != "__class__":
-                    setattr(self, key, value)
                 if key == "created_at" or key == "updated_at":
                     value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+                if key != "__class__":
+                    setattr(self, key, value)
+
         else:
             self.id = str(idc())
             self.created_at = self.updated_at = datetime.now()
-            models.write.new(self)
+            models.storage.new(self)
 
     def __str__(self):
         """ Return a string with
@@ -38,7 +39,7 @@ class BaseModel:
         """updates the public instance attribute updated_at
         with the current datetime"""
         self.updated_at = datetime.now()
-        models.write.save()
+        models.storage.save()
 
     def to_dict(self):
         """ returns a dictionary containing all keys/values"""
