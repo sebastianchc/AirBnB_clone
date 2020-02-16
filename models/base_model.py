@@ -24,7 +24,8 @@ class BaseModel:
 
         else:
             self.id = str(idc())
-            self.created_at = self.updated_at = datetime.now()
+            self.created_at = datetime.now()
+            self.updated_at = datetime.now()
             models.storage.new(self)
 
     def __str__(self):
