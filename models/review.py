@@ -1,10 +1,11 @@
 #!/usr/bin/python3
-"""review Class"""
+""" Review class of AirBnB clone project """
 from models.base_model import BaseModel
 
 
 class Review(BaseModel):
-    """review class"""
+    """ Review class """
+
     place_id = ""
     user_id = ""
     text = ""

@@ -1,121 +1,125 @@
 #!/usr/bin/python3
-"""The AirBnb Console"""
+""" AirBnB console """
 import cmd
 import re
 import json
 from models import storage
 from models.base_model import BaseModel
 from models.user import User
-from models.place import Place
 from models.state import State
 from models.city import City
 from models.amenity import Amenity
+from models.place import Place
 from models.review import Review
-from shlex import split
 
 
 class HBNBCommand(cmd.Cmd):
+    """ HBNBCommand class """
 
-    prompt = "(hbnb)"
-    my_classes = {"BaseModel", "Amenity", "Place", "State", "City",
-                  "Review", "User"}
+    prompt = "(hbnb) "
+    my_classes = {"BaseModel", "Amenity", "Place", "State",
+                  "City", "Review", "User"}
 
     def do_quit(self, line):
-        """Quit command to exit the program"""
+        """ quit command """
+        return True
+
+    def do_EOF(self, line):
+        """ EOF command """
         return True
 
     def emptyline(self):
-        """Pass"""
+        """ emptyline """
         pass
 
-    def do_EOF(self, line):
-        """Quit command to exit the program at the end of file"""
-        return True
-
     def do_create(self, line):
-        """create"""
+        """ create command """
         try:
             if not line:
                 raise SyntaxError()
-            args = line.split()
-            obj = eval("{}()".format(args[0]))
-            obj.save()
-            print("{}".format(obj.id))
+            object = eval("{}()".format(line))
+            object.save()
+            print("{}".format(object.id))
         except SyntaxError:
             print("** class name missing **")
         except NameError:
-            print("** class doesn't sdst **")
+            print("** class doesn't exist **")
 
     def do_show(self, line):
+        """ show command """
+        args = line.split()
         try:
-            if not line:
+            if not args:
                 raise SyntaxError()
             args = line.split()
-            print(args)
             if args[0] not in self.my_classes:
                 raise NameError()
             if len(args) < 2:
                 raise IndexError()
-            value = storage.all()
-            key = args[0] + '.' + args[1]
-            if key in value:
-                print(value[key])
+            dict_objs = storage.all()
+            obj = "{}.{}".format(args[0], args[1])
+            if obj in dict_objs:
+                print(dict_objs[obj])
             else:
                 raise KeyError()
         except SyntaxError:
             print("** class name missing **")
-        except IndexError:
-            print("** instance id missing **")
         except NameError:
             print("** class doesn't exist **")
+        except IndexError:
+            print("** instance id missing **")
         except KeyError:
-            print("** no instance found**")
+            print("** no instance found **")
 
     def do_destroy(self, line):
+        """ destroy command """
+        args = line.split()
         try:
-            if not line:
+            if not args:
                 raise SyntaxError()
-            args = line.split()
             if args[0] not in self.my_classes:
                 raise NameError()
             if len(args) < 2:
                 raise IndexError()
-            value = storage.all()
-            key = args[0] + '.' + args[1]
-            if key in value:
-                del (value[key])
-            else:
+            dict_objs = storage.all()
+            obj = "{}.{}".format(args[0], args[1])
+            if obj in dict_objs:
+                del (dict_objs[obj])
                 storage.save()
+            else:
+                raise KeyError()
         except SyntaxError:
             print("** class name missing **")
-        except IndexError:
-            print("** instance id missing **")
         except NameError:
             print("** class doesn't exist **")
+        except IndexError:
+            print("** instance id missing **")
         except KeyError:
-            print("** no instance found**")
+            print("** no instance found **")
 
     def do_all(self, line):
-        obj = storage.all()
-        args = []
+        """ all command """
+        dict_objs = storage.all()
+        all_objs = []
         if not line:
-            for key, val in obj.items():
-                args.append(str(val))
-            print(args)
+            for key, obj in dict_objs.items():
+                all_objs.append(str(obj))
+            print(all_objs)
             return
         try:
             args = line.split()
             if args[0] not in self.my_classes:
                 raise NameError()
-            for key, val in obj.items():
-                n = key.split('.')
-                if n[0] == args[0]:
-                    args.append(str(val))
-            print(args)
+            for key, obj in dict_objs.items():
+                the_class = key.split(".")
+                if the_class[0] == args[0]:
+                    all_objs.append(str(obj))
+            print(all_objs)
         except NameError:
             print("** class doesn't exist **")
 
     def do_update(self, line):
+        """ update command """
         try:
             if not line:
                 raise SyntaxError()
@@ -124,17 +128,18 @@ class HBNBCommand(cmd.Cmd):
                 raise NameError()
             if len(args) < 2:
                 raise IndexError()
-            value = storage.all()
-            key = args[0] + '.' + args[1]
-            if key not in value:
+            dict_objs = storage.all()
+            obj = "{}.{}".format(args[0], args[1])
+            if obj not in dict_objs:
                 raise KeyError()
             if len(args) < 3:
-                raise attributeError()
+                raise AttributeError()
             if len(args) < 4:
                 raise ValueError()
-            field = value[key]
+            field = dict_objs[obj]
             try:
                 field.__dict__[args[2]] = eval(args[3])
+                field.save()
             except Exception:
                 field.__dict__[args[2]] = args[3]
                 field.save()
