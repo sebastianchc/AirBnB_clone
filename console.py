@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 """The AirBnb Console"""
 import cmd
+import re
+import json
 from models import storage
 from models.base_model import BaseModel
 from models.user import User
@@ -48,7 +50,8 @@ class HBNBCommand(cmd.Cmd):
         try:
             if not line:
                 raise SyntaxError()
-            args = shlex.split(line)
+            args = line.split()
+            print(args)
             if args[0] not in self.my_classes:
                 raise NameError()
             if len(args) < 2:
@@ -163,6 +166,18 @@ class HBNBCommand(cmd.Cmd):
         except NameError:
             print("** class doesn't exist **")
 
+    def cleaner(self, line_list):
+        line_list = str(line_list).replace("update(", "")
+        line_list = str(line_list).replace("show(", "")
+        line_list = str(line_list).replace("destroy(", "")
+        line_list = line_list.split(',')
+        new = ""
+        for i in range(len(line_list)):
+            line_list[i] = re.sub(r"[^a-zA-Z0-9-_]", "", line_list[i])
+            new += line_list[i]
+            new += " "
+        return(new)
+
     def default(self, line):
         line_list = line.split('.')
         if len(line_list) >= 2:
@@ -171,7 +186,26 @@ class HBNBCommand(cmd.Cmd):
             elif line_list[1] == "count()":
                 self.count(line_list[0])
             elif line_list[1][:4] == "show":
-                self.do_show()
+                self.do_show(self.cleaner(line_list))
+            elif line_list[1][:7] == "destroy":
+                self.do_destroy(self.cleaner(line_list))
+            elif line_list[1][:6] == "update":
+                result = line_list[1].find('{')
+                result1 = line_list[1].find('}')
+                if (result != -1 and result1 != -1):
+                    line = line_list[1]
+                    line = line.replace("'", '"')
+                    line = line[result:result1 + 1]
+                    dic = json.loads(line)
+                    first = self.cleaner(line_list).split()
+                    new = ""
+                    for i in range(2):
+                        new += first[i]
+                        new += " "
+                    for key, value in dic.items():
+                        self.do_update(("{} {} {}".format(new, key, value)))
+                else:
+                    self.do_update(self.cleaner(line_list))
         else:
             cmd.Cmd.defualt(self, line)
 
