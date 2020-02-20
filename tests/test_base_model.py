@@ -41,6 +41,3 @@ class test_base_model(unittest.TestCase):
         d = base1.to_dict()
         self.assertEqual(d["__class__"], "BaseModel")
         self.assertEqual(type(d["created_at"]), str)
-
-
-
